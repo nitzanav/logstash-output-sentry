@@ -129,6 +129,11 @@ class LogStash::Outputs::Sentry < LogStash::Outputs::Base
 
     url = "#{event.sprintf(@url)}/#{event.sprintf(@project_id)}/store/"
 
+    packet["tags"] ||= {}
+    packet["tags"]["server"] = packet["extra"]["beat"]["hostname"]
+    packet["tags"]["source"] = packet["extra"]["source"]
+    packet["tags"]["type"] = packet["extra"]["type"]
+    
     require 'http'
     response = HTTP.post(url, :body => packet.to_json, :headers => {:"X-Sentry-Auth" => auth_header})
     raise "Sentry answered with #{response} and code #{response.code} to our request #{packet}" unless response.code == 200
